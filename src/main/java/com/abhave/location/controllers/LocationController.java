@@ -1,9 +1,12 @@
 package com.abhave.location.controllers;
 
 import com.abhave.location.entities.Location;
+import com.abhave.location.repositories.LocationRepository;
 import com.abhave.location.service.LocationService;
 import com.abhave.location.util.EmailUtil;
 import java.util.List;
+
+import com.abhave.location.util.ReportUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,6 +15,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.servlet.ServletContext;
+
 @Controller
 public class LocationController {
 
@@ -19,7 +24,16 @@ public class LocationController {
     LocationService service;
 
     @Autowired
+    LocationRepository repository;
+
+    @Autowired
     EmailUtil emailUtil;
+
+    @Autowired
+    ReportUtil reportUtil;
+
+    @Autowired
+    ServletContext sc;
 
     @RequestMapping("/showCreate")
     public String showCreate() {
@@ -66,6 +80,16 @@ public class LocationController {
         modelMap.addAttribute("locations", locations);
         emailUtil.sendEmail("bhaveprojects@gmail.com", "Location Updated", "We just updated a new location to the database.");
         return "displayLocations";
+    }
+
+    @RequestMapping("/generateReport")
+    public String generateReport() {
+
+
+        List<Object[]> data = repository.findTypeByCount();
+        String path = sc.getRealPath("/");
+        reportUtil.generatePieChart(path, data);
+        return "report";
     }
 
 }
